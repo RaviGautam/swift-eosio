@@ -272,6 +272,7 @@ public extension API.V1.Chain {
 
     /// Fetch an EOSIO account.
     struct GetAccount: Request {
+    //https://test.proton.eosusa.news/v2/state/get_account?account=revtest
         public static let path = "/v1/chain/get_account"
         public struct Response: Decodable {
             public let accountName: Name
@@ -305,6 +306,455 @@ public extension API.V1.Chain {
         public init(_ accountName: Name) {
             self.accountName = accountName
         }
+    }
+    struct GetAccountDetails: Request {
+        public static let path = "/v1/chain/get_account"
+        struct Response: Codable {
+            public let queryTimeMS: Double
+            public let account: Account
+            public let links: [JSONAny]
+            public let tokens: [Token]
+            public let totalActions: Int
+            public let actions: [Action]
+
+            enum CodingKeys: String, CodingKey {
+                case queryTimeMS = "query_time_ms"
+                case account, links, tokens
+                case totalActions = "total_actions"
+                case actions
+            }
+        }
+
+        // MARK: - Account
+        struct Account: Codable {
+            let accountName: AccountName
+            let headBlockNum: Int
+            let headBlockTime: String
+            let privileged: Bool
+            let lastCodeUpdate, created: String
+            let ramQuota, netWeight, cpuWeight: Int
+            let netLimit, cpuLimit: Limit
+            let ramUsage: Int
+            let permissions: [PermissionElement]
+            let totalResources: TotalResources
+            let selfDelegatedBandwidth, refundRequest, voterInfo, rexInfo: JSONNull?
+            let subjectiveCPUBillLimit: Limit
+            let eosioAnyLinkedActions: [JSONAny]
+
+            enum CodingKeys: String, CodingKey {
+                case accountName = "account_name"
+                case headBlockNum = "head_block_num"
+                case headBlockTime = "head_block_time"
+                case privileged
+                case lastCodeUpdate = "last_code_update"
+                case created
+                case ramQuota = "ram_quota"
+                case netWeight = "net_weight"
+                case cpuWeight = "cpu_weight"
+                case netLimit = "net_limit"
+                case cpuLimit = "cpu_limit"
+                case ramUsage = "ram_usage"
+                case permissions
+                case totalResources = "total_resources"
+                case selfDelegatedBandwidth = "self_delegated_bandwidth"
+                case refundRequest = "refund_request"
+                case voterInfo = "voter_info"
+                case rexInfo = "rex_info"
+                case subjectiveCPUBillLimit = "subjective_cpu_bill_limit"
+                case eosioAnyLinkedActions = "eosio_any_linked_actions"
+            }
+        }
+
+        enum AccountName: String, Codable {
+            case eosioRAM = "eosio.ram"
+            case revtest = "revtest"
+            case tokenFaucet = "token.faucet"
+        }
+
+        // MARK: - Limit
+        struct Limit: Codable {
+            let used, available, max: Int
+        }
+
+        // MARK: - PermissionElement
+        struct PermissionElement: Codable {
+            let permName, parent: String
+            let requiredAuth: RequiredAuth
+            let linkedActions: [JSONAny]
+
+            enum CodingKeys: String, CodingKey {
+                case permName = "perm_name"
+                case parent
+                case requiredAuth = "required_auth"
+                case linkedActions = "linked_actions"
+            }
+        }
+
+        // MARK: - RequiredAuth
+        struct RequiredAuth: Codable {
+            let threshold: Int
+            let keys: [Key]
+            let accounts, waits: [JSONAny]
+        }
+
+        // MARK: - Key
+        struct Key: Codable {
+            let key: String
+            let weight: Int
+        }
+
+        // MARK: - TotalResources
+        struct TotalResources: Codable {
+            let owner: AccountName
+            let netWeight, cpuWeight: String
+            let ramBytes: Int
+
+            enum CodingKeys: String, CodingKey {
+                case owner
+                case netWeight = "net_weight"
+                case cpuWeight = "cpu_weight"
+                case ramBytes = "ram_bytes"
+            }
+        }
+
+        // MARK: - Action
+        struct Action: Codable {
+            let timestamp, actionTimestamp: String
+            let blockNum: Int
+            let trxID: String
+            let act: Act
+            let notified: [String]
+            let cpuUsageUs, netUsageWords: Int?
+            let globalSequence: Int
+            let producer: String
+            let actionOrdinal, creatorActionOrdinal: Int
+            let signatures: [String]?
+            let accountRAMDeltas: [AccountRAMDelta]?
+            let receiver: Receiver?
+
+            enum CodingKeys: String, CodingKey {
+                case timestamp = "@timestamp"
+                case actionTimestamp = "timestamp"
+                case blockNum = "block_num"
+                case trxID = "trx_id"
+                case act, notified
+                case cpuUsageUs = "cpu_usage_us"
+                case netUsageWords = "net_usage_words"
+                case globalSequence = "global_sequence"
+                case producer
+                case actionOrdinal = "action_ordinal"
+                case creatorActionOrdinal = "creator_action_ordinal"
+                case signatures
+                case accountRAMDeltas = "account_ram_deltas"
+                case receiver
+            }
+        }
+
+        // MARK: - AccountRAMDelta
+        struct AccountRAMDelta: Codable {
+            let account: String
+            let delta: Int
+        }
+
+        // MARK: - Act
+        struct Act: Codable {
+            let account: Receiver
+            let name: String
+            let authorization: [Authorization]
+            let data: DataClass
+        }
+
+        enum Receiver: String, Codable {
+            case eosio = "eosio"
+            case eosioToken = "eosio.token"
+            case protonWrap = "proton.wrap"
+            case tokenFaucet = "token.faucet"
+        }
+
+        // MARK: - Authorization
+        struct Authorization: Codable {
+            let actor: AccountName
+            let permission: PermissionEnum
+        }
+
+        enum PermissionEnum: String, Codable {
+            case active = "active"
+        }
+
+        // MARK: - DataClass
+        struct DataClass: Codable {
+            let from: AccountName?
+            let to: String?
+            let amount: Double?
+            let symbol, quantity: String?
+            let memo: String?
+            let programID: String?
+            let account, protonAccount: AccountName?
+            let time: String?
+            let bytes: Int?
+            let payer: AccountName?
+            let receiver: String?
+            let active, owner: RequiredAuth?
+            let newact: String?
+            let creator: AccountName?
+
+            enum CodingKeys: String, CodingKey {
+                case from, to, amount, symbol, quantity, memo
+                case programID = "programId"
+                case account, protonAccount, time, bytes, payer, receiver, active, owner, newact, creator
+            }
+        }
+
+        // MARK: - Token
+        struct Token: Codable {
+            let symbol: String
+            let precision: Int
+            let amount: Double
+            let contract: Receiver
+        }
+
+        // MARK: - Encode/decode helpers
+
+        class JSONNull: Codable, Hashable {
+
+            public static func == (lhs: JSONNull, rhs: JSONNull) -> Bool {
+                return true
+            }
+
+            public var hashValue: Int {
+                return 0
+            }
+
+            public init() {}
+
+            public required init(from decoder: Decoder) throws {
+                let container = try decoder.singleValueContainer()
+                if !container.decodeNil() {
+                    throw DecodingError.typeMismatch(JSONNull.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for JSONNull"))
+                }
+            }
+
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                try container.encodeNil()
+            }
+        }
+
+        class JSONCodingKey: CodingKey {
+            let key: String
+
+            required init?(intValue: Int) {
+                return nil
+            }
+
+            required init?(stringValue: String) {
+                key = stringValue
+            }
+
+            var intValue: Int? {
+                return nil
+            }
+
+            var stringValue: String {
+                return key
+            }
+        }
+
+        class JSONAny: Codable {
+
+            let value: Any
+
+            static func decodingError(forCodingPath codingPath: [CodingKey]) -> DecodingError {
+                let context = DecodingError.Context(codingPath: codingPath, debugDescription: "Cannot decode JSONAny")
+                return DecodingError.typeMismatch(JSONAny.self, context)
+            }
+
+            static func encodingError(forValue value: Any, codingPath: [CodingKey]) -> EncodingError {
+                let context = EncodingError.Context(codingPath: codingPath, debugDescription: "Cannot encode JSONAny")
+                return EncodingError.invalidValue(value, context)
+            }
+
+            static func decode(from container: SingleValueDecodingContainer) throws -> Any {
+                if let value = try? container.decode(Bool.self) {
+                    return value
+                }
+                if let value = try? container.decode(Int64.self) {
+                    return value
+                }
+                if let value = try? container.decode(Double.self) {
+                    return value
+                }
+                if let value = try? container.decode(String.self) {
+                    return value
+                }
+                if container.decodeNil() {
+                    return JSONNull()
+                }
+                throw decodingError(forCodingPath: container.codingPath)
+            }
+
+            static func decode(from container: inout UnkeyedDecodingContainer) throws -> Any {
+                if let value = try? container.decode(Bool.self) {
+                    return value
+                }
+                if let value = try? container.decode(Int64.self) {
+                    return value
+                }
+                if let value = try? container.decode(Double.self) {
+                    return value
+                }
+                if let value = try? container.decode(String.self) {
+                    return value
+                }
+                if let value = try? container.decodeNil() {
+                    if value {
+                        return JSONNull()
+                    }
+                }
+                if var container = try? container.nestedUnkeyedContainer() {
+                    return try decodeArray(from: &container)
+                }
+                if var container = try? container.nestedContainer(keyedBy: JSONCodingKey.self) {
+                    return try decodeDictionary(from: &container)
+                }
+                throw decodingError(forCodingPath: container.codingPath)
+            }
+
+            static func decode(from container: inout KeyedDecodingContainer<JSONCodingKey>, forKey key: JSONCodingKey) throws -> Any {
+                if let value = try? container.decode(Bool.self, forKey: key) {
+                    return value
+                }
+                if let value = try? container.decode(Int64.self, forKey: key) {
+                    return value
+                }
+                if let value = try? container.decode(Double.self, forKey: key) {
+                    return value
+                }
+                if let value = try? container.decode(String.self, forKey: key) {
+                    return value
+                }
+                if let value = try? container.decodeNil(forKey: key) {
+                    if value {
+                        return JSONNull()
+                    }
+                }
+                if var container = try? container.nestedUnkeyedContainer(forKey: key) {
+                    return try decodeArray(from: &container)
+                }
+                if var container = try? container.nestedContainer(keyedBy: JSONCodingKey.self, forKey: key) {
+                    return try decodeDictionary(from: &container)
+                }
+                throw decodingError(forCodingPath: container.codingPath)
+            }
+
+            static func decodeArray(from container: inout UnkeyedDecodingContainer) throws -> [Any] {
+                var arr: [Any] = []
+                while !container.isAtEnd {
+                    let value = try decode(from: &container)
+                    arr.append(value)
+                }
+                return arr
+            }
+
+            static func decodeDictionary(from container: inout KeyedDecodingContainer<JSONCodingKey>) throws -> [String: Any] {
+                var dict = [String: Any]()
+                for key in container.allKeys {
+                    let value = try decode(from: &container, forKey: key)
+                    dict[key.stringValue] = value
+                }
+                return dict
+            }
+
+            static func encode(to container: inout UnkeyedEncodingContainer, array: [Any]) throws {
+                for value in array {
+                    if let value = value as? Bool {
+                        try container.encode(value)
+                    } else if let value = value as? Int64 {
+                        try container.encode(value)
+                    } else if let value = value as? Double {
+                        try container.encode(value)
+                    } else if let value = value as? String {
+                        try container.encode(value)
+                    } else if value is JSONNull {
+                        try container.encodeNil()
+                    } else if let value = value as? [Any] {
+                        var container = container.nestedUnkeyedContainer()
+                        try encode(to: &container, array: value)
+                    } else if let value = value as? [String: Any] {
+                        var container = container.nestedContainer(keyedBy: JSONCodingKey.self)
+                        try encode(to: &container, dictionary: value)
+                    } else {
+                        throw encodingError(forValue: value, codingPath: container.codingPath)
+                    }
+                }
+            }
+
+            static func encode(to container: inout KeyedEncodingContainer<JSONCodingKey>, dictionary: [String: Any]) throws {
+                for (key, value) in dictionary {
+                    let key = JSONCodingKey(stringValue: key)!
+                    if let value = value as? Bool {
+                        try container.encode(value, forKey: key)
+                    } else if let value = value as? Int64 {
+                        try container.encode(value, forKey: key)
+                    } else if let value = value as? Double {
+                        try container.encode(value, forKey: key)
+                    } else if let value = value as? String {
+                        try container.encode(value, forKey: key)
+                    } else if value is JSONNull {
+                        try container.encodeNil(forKey: key)
+                    } else if let value = value as? [Any] {
+                        var container = container.nestedUnkeyedContainer(forKey: key)
+                        try encode(to: &container, array: value)
+                    } else if let value = value as? [String: Any] {
+                        var container = container.nestedContainer(keyedBy: JSONCodingKey.self, forKey: key)
+                        try encode(to: &container, dictionary: value)
+                    } else {
+                        throw encodingError(forValue: value, codingPath: container.codingPath)
+                    }
+                }
+            }
+
+            static func encode(to container: inout SingleValueEncodingContainer, value: Any) throws {
+                if let value = value as? Bool {
+                    try container.encode(value)
+                } else if let value = value as? Int64 {
+                    try container.encode(value)
+                } else if let value = value as? Double {
+                    try container.encode(value)
+                } else if let value = value as? String {
+                    try container.encode(value)
+                } else if value is JSONNull {
+                    try container.encodeNil()
+                } else {
+                    throw encodingError(forValue: value, codingPath: container.codingPath)
+                }
+            }
+
+            public required init(from decoder: Decoder) throws {
+                if var arrayContainer = try? decoder.unkeyedContainer() {
+                    self.value = try JSONAny.decodeArray(from: &arrayContainer)
+                } else if var container = try? decoder.container(keyedBy: JSONCodingKey.self) {
+                    self.value = try JSONAny.decodeDictionary(from: &container)
+                } else {
+                    let container = try decoder.singleValueContainer()
+                    self.value = try JSONAny.decode(from: container)
+                }
+            }
+
+            public func encode(to encoder: Encoder) throws {
+                if let arr = self.value as? [Any] {
+                    var container = encoder.unkeyedContainer()
+                    try JSONAny.encode(to: &container, array: arr)
+                } else if let dict = self.value as? [String: Any] {
+                    var container = encoder.container(keyedBy: JSONCodingKey.self)
+                    try JSONAny.encode(to: &container, dictionary: dict)
+                } else {
+                    var container = encoder.singleValueContainer()
+                    try JSONAny.encode(to: &container, value: self.value)
+                }
+            }
+        }
+
     }
 
     /// Get list of accounts controlled by given public key or authority.
