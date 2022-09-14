@@ -13,7 +13,7 @@ public extension API.V1.Chain {
         public let cpuWeight: Asset
         public let ramBytes: FCInt<Int64>
     }
-
+    
     /// Type representing delegated bandwidth, from the eosio.system contract.
     struct DelegatedBandwidth: ABICodable, Equatable, Hashable {
         public let from: Name
@@ -21,7 +21,7 @@ public extension API.V1.Chain {
         public let netWeight: Asset
         public let cpuWeight: Asset
     }
-
+    
     /// Type representing a refund request, from the eosio.system contract.
     struct RefundRequest: ABICodable, Equatable, Hashable {
         public let owner: Name
@@ -29,7 +29,7 @@ public extension API.V1.Chain {
         public let netAmount: Asset
         public let cpuAmount: Asset
     }
-
+    
     /// Type representing a refund request, from the eosio.system contract.
     struct VoterInfo: Decodable, Equatable, Hashable {
         public let owner: Name
@@ -41,14 +41,14 @@ public extension API.V1.Chain {
         public let isProxy: UInt8 // ABI says bool but eosio serializer gives a number?
         // omitted, flags1, reserved2, reserved3
     }
-
+    
     /// Permission type, only used in chain api.
     struct Permission: ABICodable, Equatable, Hashable {
         public let permName: Name
         public let parent: Name
         public let requiredAuth: Authority
     }
-
+    
     /// Various details about the blockchain.
     struct GetInfo: Request {
         public static let path = "/v1/chain/get_info"
@@ -84,7 +84,7 @@ public extension API.V1.Chain {
             public let forkDbHeadBlockNum: BlockNum?
             /// Hash representing the best known head in the fork database tree.
             public let forkDbHeadBlockId: BlockId?
-
+            
             public var taposValues: (refBlockNum: UInt16, refBlockPrefix: UInt32, expiration: TimePointSec?) {
                 let refBlockId = self.lastIrreversibleBlockId
                 let refBlockNum = UInt16(refBlockId.blockNum & 0xFFFF)
@@ -93,10 +93,10 @@ public extension API.V1.Chain {
                 return (refBlockNum, refBlockPrefix, expiration)
             }
         }
-
+        
         public init() {}
     }
-
+    
     struct GetRawAbi: Request {
         public static let path = "/v1/chain/get_raw_abi"
         public struct Response: Decodable {
@@ -111,14 +111,14 @@ public extension API.V1.Chain {
                 return try? ABIDecoder.decode(ABI.self, data: data)
             }
         }
-
+        
         public var accountName: Name
-
+        
         public init(_ accountName: Name) {
             self.accountName = accountName
         }
     }
-
+    
     struct GetRawCodeAndAbi: Request {
         public static let path = "/v1/chain/get_raw_code_and_abi"
         public struct Response: Decodable {
@@ -129,14 +129,14 @@ public extension API.V1.Chain {
                 return try? ABIDecoder.decode(ABI.self, data: self.abi.bytes)
             }
         }
-
+        
         public var accountName: Name
-
+        
         public init(_ accountName: Name) {
             self.accountName = accountName
         }
     }
-
+    
     /// Get code and ABI.
     /// - Attention: Nodeos sends invalid JSON for this call for some accounts. Use `GetRawAbi` and `GetRawAbi
     struct GetCode: Request {
@@ -148,15 +148,15 @@ public extension API.V1.Chain {
             public let codeHash: Checksum256
             public let abi: ABI?
         }
-
+        
         public var accountName: Name
         public var codeAsWasm = true
-
+        
         public init(_ accountName: Name) {
             self.accountName = accountName
         }
     }
-
+    
     /// Query the contents of EOSIO RAM.
     ///
     /// Some params are unsupported, namely:
@@ -169,12 +169,12 @@ public extension API.V1.Chain {
         public struct Response: Decodable {
             public let rows: [T]
             public let more: Bool
-
+            
             private enum Keys: CodingKey {
                 case rows
                 case more
             }
-
+            
             public init(from decoder: Decoder) throws {
                 let container = try decoder.container(keyedBy: Keys.self)
                 var rowContainer = try container.nestedUnkeyedContainer(forKey: .rows)
@@ -187,15 +187,15 @@ public extension API.V1.Chain {
                 self.more = try container.decode(.more)
             }
         }
-
+        
         public enum IndexPosition: String, Encodable {
             case primary, secondary, tertiary, fourth, fifth, sixth, seventh, eighth, ninth, tenth
         }
-
+        
         public enum KeyType: String, Encodable {
             case name, i64, i128, i256, float64, float128, sha256, ripemd160
         }
-
+        
         /// The name of the smart contract that controls the provided table.
         public var code: Name
         /// The account to which this data belongs.
@@ -214,28 +214,28 @@ public extension API.V1.Chain {
         public var indexPosition: IndexPosition = .primary
         /// Whether to iterate records in reverse order.
         public var reverse: Bool?
-
+        
         /// Create a new `get_table_rows` request.
         public init(code: Name, table: Name, scope: String) {
             self.code = code
             self.scope = scope
             self.table = table
         }
-
+        
         /// Create a new `get_table_rows` request with scope set from any type representable by a 64-bit unsigned integer.
         public init<T: RawRepresentable>(code: Name, table: Name, scope: T) where T.RawValue == UInt64 {
             self.code = code
             self.scope = Name(rawValue: scope.rawValue).stringValue
             self.table = table
         }
-
+        
         /// Create a new `get_table_rows` request with scope from a 64-bit unsigned integer.
         public init(code: Name, table: Name, scope: UInt64) {
             self.code = code
             self.scope = Name(rawValue: scope).stringValue
             self.table = table
         }
-
+        
         /// Create a new `get_table_rows` request with scope set to the code account.
         public init(code: Name, table: Name) {
             self.code = code
@@ -243,36 +243,36 @@ public extension API.V1.Chain {
             self.table = table
         }
     }
-
+    
     /// Push a transaction.
     struct PushTransaction: Request {
         public static let path = "/v1/chain/push_transaction"
         public struct Response: Decodable {
             public let transactionId: TransactionId
             public let processed: [String: Any]
-
+            
             public init(from decoder: Decoder) throws {
                 let container = try decoder.container(keyedBy: StringCodingKey.self)
                 self.transactionId = try container.decode(TransactionId.self, forKey: "transactionId")
                 self.processed = try container.decode([String: Any].self, forKey: "processed")
             }
         }
-
+        
         public var signedTransaction: SignedTransaction
-
+        
         public init(_ signedTransaction: SignedTransaction) {
             self.signedTransaction = signedTransaction
         }
-
+        
         public func encode(to encoder: Encoder) throws {
             let packed = try PackedTransaction(self.signedTransaction)
             try packed.encode(to: encoder)
         }
     }
-
+    
     /// Fetch an EOSIO account.
     struct GetAccount: Request {
-    //https://test.proton.eosusa.news/v2/state/get_account?account=revtest
+        //https://test.proton.eosusa.news/v2/state/get_account?account=revtest
         public static let path = "/v1/chain/get_account"
         public struct Response: Decodable {
             public let accountName: Name
@@ -299,24 +299,24 @@ public extension API.V1.Chain {
             public let refundRequest: RefundRequest?
             public let voterInfo: VoterInfo?
         }
-
+        
         public var accountName: Name
         public var expectedCoreSymbol: Asset.Symbol?
-
+        
         public init(_ accountName: Name) {
             self.accountName = accountName
         }
     }
     struct GetAccountDetails: Request {
         public static let path = "/v1/chain/get_account"
-        struct Response: Codable {
+        public struct Response: Codable {
             public let queryTimeMS: Double
             public let account: Account
             public let links: [JSONAny]
             public let tokens: [Token]
             public let totalActions: Int
             public let actions: [Action]
-
+            
             enum CodingKeys: String, CodingKey {
                 case queryTimeMS = "query_time_ms"
                 case account, links, tokens
@@ -324,9 +324,9 @@ public extension API.V1.Chain {
                 case actions
             }
         }
-
+        
         // MARK: - Account
-        struct Account: Codable {
+        public struct Account: Codable {
             let accountName: AccountName
             let headBlockNum: Int
             let headBlockTime: String
@@ -340,7 +340,7 @@ public extension API.V1.Chain {
             let selfDelegatedBandwidth, refundRequest, voterInfo, rexInfo: JSONNull?
             let subjectiveCPUBillLimit: Limit
             let eosioAnyLinkedActions: [JSONAny]
-
+            
             enum CodingKeys: String, CodingKey {
                 case accountName = "account_name"
                 case headBlockNum = "head_block_num"
@@ -364,24 +364,24 @@ public extension API.V1.Chain {
                 case eosioAnyLinkedActions = "eosio_any_linked_actions"
             }
         }
-
+        
         enum AccountName: String, Codable {
             case eosioRAM = "eosio.ram"
             case revtest = "revtest"
             case tokenFaucet = "token.faucet"
         }
-
+        
         // MARK: - Limit
         struct Limit: Codable {
             let used, available, max: Int
         }
-
+        
         // MARK: - PermissionElement
         struct PermissionElement: Codable {
             let permName, parent: String
             let requiredAuth: RequiredAuth
             let linkedActions: [JSONAny]
-
+            
             enum CodingKeys: String, CodingKey {
                 case permName = "perm_name"
                 case parent
@@ -389,26 +389,26 @@ public extension API.V1.Chain {
                 case linkedActions = "linked_actions"
             }
         }
-
+        
         // MARK: - RequiredAuth
         struct RequiredAuth: Codable {
             let threshold: Int
             let keys: [Key]
             let accounts, waits: [JSONAny]
         }
-
+        
         // MARK: - Key
         struct Key: Codable {
             let key: String
             let weight: Int
         }
-
+        
         // MARK: - TotalResources
         struct TotalResources: Codable {
             let owner: AccountName
             let netWeight, cpuWeight: String
             let ramBytes: Int
-
+            
             enum CodingKeys: String, CodingKey {
                 case owner
                 case netWeight = "net_weight"
@@ -416,9 +416,9 @@ public extension API.V1.Chain {
                 case ramBytes = "ram_bytes"
             }
         }
-
+        
         // MARK: - Action
-        struct Action: Codable {
+        public struct Action: Codable {
             let timestamp, actionTimestamp: String
             let blockNum: Int
             let trxID: String
@@ -431,7 +431,7 @@ public extension API.V1.Chain {
             let signatures: [String]?
             let accountRAMDeltas: [AccountRAMDelta]?
             let receiver: Receiver?
-
+            
             enum CodingKeys: String, CodingKey {
                 case timestamp = "@timestamp"
                 case actionTimestamp = "timestamp"
@@ -449,40 +449,40 @@ public extension API.V1.Chain {
                 case receiver
             }
         }
-
+        
         // MARK: - AccountRAMDelta
-        struct AccountRAMDelta: Codable {
+        public struct AccountRAMDelta: Codable {
             let account: String
             let delta: Int
         }
-
+        
         // MARK: - Act
-        struct Act: Codable {
+        public struct Act: Codable {
             let account: Receiver
             let name: String
             let authorization: [Authorization]
             let data: DataClass
         }
-
+        
         enum Receiver: String, Codable {
             case eosio = "eosio"
             case eosioToken = "eosio.token"
             case protonWrap = "proton.wrap"
             case tokenFaucet = "token.faucet"
         }
-
+        
         // MARK: - Authorization
-        struct Authorization: Codable {
+        public struct Authorization: Codable {
             let actor: AccountName
             let permission: PermissionEnum
         }
-
+        
         enum PermissionEnum: String, Codable {
             case active = "active"
         }
-
+        
         // MARK: - DataClass
-        struct DataClass: Codable {
+        public struct DataClass: Codable {
             let from: AccountName?
             let to: String?
             let amount: Double?
@@ -497,83 +497,83 @@ public extension API.V1.Chain {
             let active, owner: RequiredAuth?
             let newact: String?
             let creator: AccountName?
-
+            
             enum CodingKeys: String, CodingKey {
                 case from, to, amount, symbol, quantity, memo
                 case programID = "programId"
                 case account, protonAccount, time, bytes, payer, receiver, active, owner, newact, creator
             }
         }
-
+        
         // MARK: - Token
-        struct Token: Codable {
+        public struct Token: Codable {
             let symbol: String
             let precision: Int
             let amount: Double
             let contract: Receiver
         }
-
+        
         // MARK: - Encode/decode helpers
-
-        class JSONNull: Codable, Hashable {
-
+        
+        public class JSONNull: Codable, Hashable {
+            
             public static func == (lhs: JSONNull, rhs: JSONNull) -> Bool {
                 return true
             }
-
+            
             public var hashValue: Int {
                 return 0
             }
-
+            
             public init() {}
-
+            
             public required init(from decoder: Decoder) throws {
                 let container = try decoder.singleValueContainer()
                 if !container.decodeNil() {
                     throw DecodingError.typeMismatch(JSONNull.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for JSONNull"))
                 }
             }
-
+            
             public func encode(to encoder: Encoder) throws {
                 var container = encoder.singleValueContainer()
                 try container.encodeNil()
             }
         }
-
-        class JSONCodingKey: CodingKey {
+        
+        public class JSONCodingKey: CodingKey {
             let key: String
-
-            required init?(intValue: Int) {
+            
+            required public init?(intValue: Int) {
                 return nil
             }
-
-            required init?(stringValue: String) {
+            
+            required public init?(stringValue: String) {
                 key = stringValue
             }
-
-            var intValue: Int? {
+            
+            public var intValue: Int? {
                 return nil
             }
-
-            var stringValue: String {
+            
+            public var stringValue: String {
                 return key
             }
         }
-
-        class JSONAny: Codable {
-
+        
+        public class JSONAny: Codable {
+            
             let value: Any
-
+            
             static func decodingError(forCodingPath codingPath: [CodingKey]) -> DecodingError {
                 let context = DecodingError.Context(codingPath: codingPath, debugDescription: "Cannot decode JSONAny")
                 return DecodingError.typeMismatch(JSONAny.self, context)
             }
-
+            
             static func encodingError(forValue value: Any, codingPath: [CodingKey]) -> EncodingError {
                 let context = EncodingError.Context(codingPath: codingPath, debugDescription: "Cannot encode JSONAny")
                 return EncodingError.invalidValue(value, context)
             }
-
+            
             static func decode(from container: SingleValueDecodingContainer) throws -> Any {
                 if let value = try? container.decode(Bool.self) {
                     return value
@@ -592,7 +592,7 @@ public extension API.V1.Chain {
                 }
                 throw decodingError(forCodingPath: container.codingPath)
             }
-
+            
             static func decode(from container: inout UnkeyedDecodingContainer) throws -> Any {
                 if let value = try? container.decode(Bool.self) {
                     return value
@@ -619,7 +619,7 @@ public extension API.V1.Chain {
                 }
                 throw decodingError(forCodingPath: container.codingPath)
             }
-
+            
             static func decode(from container: inout KeyedDecodingContainer<JSONCodingKey>, forKey key: JSONCodingKey) throws -> Any {
                 if let value = try? container.decode(Bool.self, forKey: key) {
                     return value
@@ -646,7 +646,7 @@ public extension API.V1.Chain {
                 }
                 throw decodingError(forCodingPath: container.codingPath)
             }
-
+            
             static func decodeArray(from container: inout UnkeyedDecodingContainer) throws -> [Any] {
                 var arr: [Any] = []
                 while !container.isAtEnd {
@@ -655,7 +655,7 @@ public extension API.V1.Chain {
                 }
                 return arr
             }
-
+            
             static func decodeDictionary(from container: inout KeyedDecodingContainer<JSONCodingKey>) throws -> [String: Any] {
                 var dict = [String: Any]()
                 for key in container.allKeys {
@@ -664,7 +664,7 @@ public extension API.V1.Chain {
                 }
                 return dict
             }
-
+            
             static func encode(to container: inout UnkeyedEncodingContainer, array: [Any]) throws {
                 for value in array {
                     if let value = value as? Bool {
@@ -688,7 +688,7 @@ public extension API.V1.Chain {
                     }
                 }
             }
-
+            
             static func encode(to container: inout KeyedEncodingContainer<JSONCodingKey>, dictionary: [String: Any]) throws {
                 for (key, value) in dictionary {
                     let key = JSONCodingKey(stringValue: key)!
@@ -713,7 +713,7 @@ public extension API.V1.Chain {
                     }
                 }
             }
-
+            
             static func encode(to container: inout SingleValueEncodingContainer, value: Any) throws {
                 if let value = value as? Bool {
                     try container.encode(value)
@@ -729,7 +729,7 @@ public extension API.V1.Chain {
                     throw encodingError(forValue: value, codingPath: container.codingPath)
                 }
             }
-
+            
             public required init(from decoder: Decoder) throws {
                 if var arrayContainer = try? decoder.unkeyedContainer() {
                     self.value = try JSONAny.decodeArray(from: &arrayContainer)
@@ -740,7 +740,7 @@ public extension API.V1.Chain {
                     self.value = try JSONAny.decode(from: container)
                 }
             }
-
+            
             public func encode(to encoder: Encoder) throws {
                 if let arr = self.value as? [Any] {
                     var container = encoder.unkeyedContainer()
@@ -754,13 +754,13 @@ public extension API.V1.Chain {
                 }
             }
         }
-
+        
     }
-
+    
     /// Get list of accounts controlled by given public key or authority.
     struct GetAccountsByAuthorizers: Request {
         public static let path = "/v1/chain/get_accounts_by_authorizers"
-
+        
         /// Account auth response type, used by the `GetAccountsByAuthorizers` api.
         public struct AccountAuthorizer: Decodable, Equatable, Hashable {
             public let accountName: Name
@@ -770,11 +770,11 @@ public extension API.V1.Chain {
             public let weight: Weight
             public let threshold: UInt32
         }
-
+        
         public enum AccountOrPermission: Encodable {
             case account(Name)
             case permission(PermissionLevel)
-
+            
             public func encode(to encoder: Encoder) throws {
                 var container = encoder.singleValueContainer()
                 switch self {
@@ -785,23 +785,23 @@ public extension API.V1.Chain {
                 }
             }
         }
-
+        
         public struct Response: Decodable {
             /// Account names controlled by key or authority.
             public let accounts: [AccountAuthorizer]
         }
-
+        
         public var accounts: [AccountOrPermission]?
         public var keys: [PublicKey]?
-
+        
         public init(keys: [PublicKey]) {
             self.keys = keys
         }
-
+        
         public init(accounts: [Name]) {
             self.accounts = accounts.map { .account($0) }
         }
-
+        
         public init(permissions: [PermissionLevel]) {
             self.accounts = permissions.map { .permission($0) }
         }
