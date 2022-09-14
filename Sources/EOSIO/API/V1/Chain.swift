@@ -272,7 +272,6 @@ public extension API.V1.Chain {
     
     /// Fetch an EOSIO account.
     struct GetAccount: Request {
-        //https://test.proton.eosusa.news/v2/state/get_account?account=revtest
         public static let path = "/v1/chain/get_account"
         public struct Response: Decodable {
             public let accountName: Name
@@ -307,7 +306,8 @@ public extension API.V1.Chain {
             self.accountName = accountName
         }
     }
-    struct GetAccountDetails: Request {
+    public struct GetAccountDetails: Request {
+        //https://test.proton.eosusa.news/v2/state/get_account?account=revtest
         public static let path = "/v1/chain/get_account"
         public struct Response: Codable {
             public let queryTimeMS: Double
@@ -372,12 +372,12 @@ public extension API.V1.Chain {
         }
         
         // MARK: - Limit
-        struct Limit: Codable {
+        public struct Limit: Codable {
             let used, available, max: Int
         }
         
         // MARK: - PermissionElement
-        struct PermissionElement: Codable {
+        public struct PermissionElement: Codable {
             let permName, parent: String
             let requiredAuth: RequiredAuth
             let linkedActions: [JSONAny]
@@ -391,20 +391,20 @@ public extension API.V1.Chain {
         }
         
         // MARK: - RequiredAuth
-        struct RequiredAuth: Codable {
+        public struct RequiredAuth: Codable {
             let threshold: Int
             let keys: [Key]
             let accounts, waits: [JSONAny]
         }
         
         // MARK: - Key
-        struct Key: Codable {
+        public struct Key: Codable {
             let key: String
             let weight: Int
         }
         
         // MARK: - TotalResources
-        struct TotalResources: Codable {
+        public struct TotalResources: Codable {
             let owner: AccountName
             let netWeight, cpuWeight: String
             let ramBytes: Int
