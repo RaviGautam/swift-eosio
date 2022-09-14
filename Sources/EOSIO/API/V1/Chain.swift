@@ -309,6 +309,14 @@ public extension API.V1.Chain {
     public struct GetAccountDetails: Request {
         //https://test.proton.eosusa.news/v2/state/get_account?account=revtest
         public static let path = "/v1/chain/get_account"
+        
+        public var accountName: Name
+        public var expectedCoreSymbol: Asset.Symbol?
+        
+        public init(_ accountName: Name) {
+            self.accountName = accountName
+        }
+        
         public struct Response: Codable {
             public let queryTimeMS: Double
             public let account: Account
