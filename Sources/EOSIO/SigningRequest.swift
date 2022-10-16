@@ -428,11 +428,6 @@ public struct SigningRequest: Equatable, Hashable {
     public mutating func removeCallback() {
         self.data.callback = ""
     }
-    
-    /// Get the request callback.
-    public func getCallback() ->String {
-        return self.data.callback
-    }
 
     /// Set metadata key to data value.
     public mutating func setInfo(_ key: String, data: Data) {

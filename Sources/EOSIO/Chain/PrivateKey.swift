@@ -85,6 +85,11 @@ public struct PrivateKey: Equatable, Hashable {
         let digest = try transaction.digest(using: chainId)
         return try self.sign(digest)
     }
+    
+    public func signWith(_ transaction: Transaction, using chainId: ChainId) throws -> Signature {
+        let digest = try transaction.digest(using: chainId)
+        return try self.sign(digest)
+    }
 
     /// Return the corresponding public key for this instance.
     public func getPublic() throws -> PublicKey {
