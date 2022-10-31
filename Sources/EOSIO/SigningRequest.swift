@@ -151,7 +151,7 @@ public struct SigningRequest: Equatable, Hashable {
     /// Decode a signing request from a string.
     public init(_ string: String) throws {
         var string = string
-        if string.starts(with: "esr:") {
+        if string.starts(with: "proton:") {
             string.removeFirst(4)
             if string.starts(with: "//") {
                 string.removeFirst(2)
@@ -621,7 +621,7 @@ public struct SigningRequest: Equatable, Hashable {
     ///                      Can be turned off if uri will be used in a QR code or encoded in a NFC tag to save two bytes.
     public func encodeUri(compress: Bool = true, slashes: Bool = true) throws -> String {
         let data = try self.encode(compress: compress)
-        var scheme = "esr:"
+        var scheme = "proton:"
         if slashes {
             scheme += "//"
         }
