@@ -151,7 +151,7 @@ public struct SigningRequest: Equatable, Hashable {
     /// Decode a signing request from a string.
     public init(_ string: String) throws {
         var string = string
-        if string.starts(with: "proton:") {
+        if string.starts(with: "proton:") || string.starts(with: "proton-dev:") {
             string.removeFirst(4)
             if string.starts(with: "//") {
                 string.removeFirst(2)
