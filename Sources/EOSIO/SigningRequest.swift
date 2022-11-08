@@ -8,6 +8,7 @@ import Foundation
 #endif
 
 public struct SigningRequest: Equatable, Hashable {
+    
     /// The signing request version
     public static let version: UInt8 = 3
 
@@ -151,8 +152,15 @@ public struct SigningRequest: Equatable, Hashable {
     /// Decode a signing request from a string.
     public init(_ string: String) throws {
         var string = string
-        if string.starts(with: "proton:") || string.starts(with: "proton-dev:") {
-            string.removeFirst(4)
+        if string.starts(with: "proton:") {
+            string.removeFirst(7)
+            if string.starts(with: "//") {
+                string.removeFirst(2)
+            }
+        }
+        
+        if string.starts(with: "proton-dev:") {
+            string.removeFirst(11)
             if string.starts(with: "//") {
                 string.removeFirst(2)
             }
