@@ -151,10 +151,11 @@ public struct SigningRequest: Equatable, Hashable {
     }
 
     /// Decode a signing request from a string.
-    public init(_ string: String) throws {
+    public init(_ string: String, scheme:String) throws {
         var string = string
-        if string.starts(with: self.schemeName!) {
-            string.removeFirst(self.schemeName!.count)
+        self.schemeName = scheme
+        if string.starts(with: scheme) {
+            string.removeFirst(scheme.count)
             if string.starts(with: "//") {
                 string.removeFirst(2)
             }
