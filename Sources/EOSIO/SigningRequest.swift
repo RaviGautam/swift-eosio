@@ -21,7 +21,7 @@ public struct SigningRequest: Equatable, Hashable {
     /// Placeholder permission level that resolve both actor and permission to signer.
     public static let placeholderPermission = PermissionLevel(Self.actorPlaceholder, Self.permissionPlaceholder)
 
-    public var schemeName: String?
+    public var schemeName: String = "proton"
     /// Recursively resolve any `Name` placeholders types found in value.
     public static func resolvePlaceholders<T>(_ value: T, using signer: PermissionLevel) -> T {
         func resolve(_ value: Any) -> Any {
@@ -625,7 +625,7 @@ public struct SigningRequest: Equatable, Hashable {
     ///                      Can be turned off if uri will be used in a QR code or encoded in a NFC tag to save two bytes.
     public func encodeUri(compress: Bool = true, slashes: Bool = true) throws -> String {
         let data = try self.encode(compress: compress)
-        var scheme = self.schemeName!
+        var scheme = self.schemeName
         if slashes {
             scheme += "//"
         }
