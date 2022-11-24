@@ -21,7 +21,7 @@ public struct SigningRequest: Equatable, Hashable {
     /// Placeholder permission level that resolve both actor and permission to signer.
     public static let placeholderPermission = PermissionLevel(Self.actorPlaceholder, Self.permissionPlaceholder)
 
-    public var schemeName: String = "proton"
+    public var schemeName: String = "proton:"
     /// Recursively resolve any `Name` placeholders types found in value.
     public static func resolvePlaceholders<T>(_ value: T, using signer: PermissionLevel) -> T {
         func resolve(_ value: Any) -> Any {
@@ -153,7 +153,6 @@ public struct SigningRequest: Equatable, Hashable {
     /// Decode a signing request from a string.
     public init(_ string: String, scheme:String) throws {
         var string = string
-        self.schemeName = scheme
         if string.starts(with: scheme) {
             string.removeFirst(scheme.count)
             if string.starts(with: "//") {
@@ -165,6 +164,7 @@ public struct SigningRequest: Equatable, Hashable {
             throw Error.decodingFailed("Unable to decode request payload")
         }
         self = try SigningRequest(data)
+        self.schemeName = scheme
     }
 
     /// Decode a signing request from binary format.
